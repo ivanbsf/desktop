@@ -1,0 +1,508 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Desktop</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+  }
+
+  /* Fundo de vídeo em loop */
+  #video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1000;
+  }
+
+  /* Containers dos botões */
+  .button-row {
+    position: fixed;
+    top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #left-buttons {
+    left: 10px;
+  }
+
+  #right-buttons {
+    right: 10px;
+  }
+  /* Containers dos botões esquerdos */
+  .btnesquerda{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 4;
+    display:flex;
+    flex-direction: column;
+    justify-content:center;
+    align-items:start;
+    position: absolute;
+    padding: 20px;
+    margin: 20px;
+  }
+
+  .btne{
+    width: 80px;
+    height: 10px;
+    display: block;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: bold;
+    color:#fff;
+    margin-top: 15px;
+    padding: 35px 10px;
+    margin: 15 0px;
+    padding: 10px 35px;
+    border: 2px solid #5fe36a;
+    border-radius: 3px;
+    position:relative;
+    overflow: hidden;
+    z-index: 2;
+  }
+  .btne:before{
+      content: "";
+      position:absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      background-color: #5fe36a;
+      transition: .7s ease;
+    }
+
+
+.btne1::before{
+  content: "";
+       width: 0%;
+      height: 100%;
+      
+}
+
+.btne1:hover::before{
+  width: 100%;
+}
+
+
+.btne2::before{
+  width: 100%;
+  height: 0%;
+}
+.btne2:hover::before{
+height: 100%;
+}
+.btne3::before{
+  width: 100%;
+  height: 0%;
+  transform: translate(-50%,-50%) rotate(45deg);
+}
+.btne3:hover::before{
+height: 400%;
+}
+
+.btne4::before{
+  width: 100%;
+  height: 0%;
+  transform: translate(-50%,-50%) rotate(-45deg);
+}
+.btne4:hover::before{
+height: 400%;
+}
+
+.btne5::before{
+  width: 100%;
+  height: 0%;
+  border-radius: 40%;
+ }
+.btne5:hover::before{
+height: 400%;
+}
+
+.btne6::before{
+  width: 0%;
+  height: 100%;
+  border-radius: 40%;
+ }
+.btne6:hover::before{
+  width: 400%;
+}
+
+/* Containers dos botões direitos */
+.btndireita{
+  pointer-events: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 4;
+    display:flex;
+    flex-direction: column;
+    justify-content:center;
+    align-items:end;
+    position: absolute;
+    padding: 30px;
+    margin: 0 30px;
+  }
+
+  .btnd{
+    width: 80px;
+    height: 10px;
+    pointer-events:visible;
+    display: block;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: bold;
+    color:#fff;
+    margin-top: 15px;
+    padding: 10px 35px;
+    border: 2px solid #dfa856;
+    border-radius: 3px;
+    position:relative;
+    overflow: hidden;
+    z-index: 2;
+  }
+  .btnd:before{
+      content: "";
+      position:absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      background-color: #dfa856;
+      transition: .7s ease;
+    }
+
+
+.btnd1::before{
+  content: "";
+       width: 0%;
+      height: 100%;
+      
+}
+
+.btnd1:hover::before{
+  width: 100%;
+}
+
+
+.btnd2::before{
+  width: 100%;
+  height: 0%;
+}
+.btnd2:hover::before{
+height: 110%;
+}
+.btnd3::before{
+  width: 110%;
+  height: 0%;
+  transform: translate(-50%,-50%) rotate(45deg);
+}
+.btnd3:hover::before{
+height: 450%;
+}
+
+.btnd4::before{
+  width: 100%;
+  height: 0%;
+  transform: translate(-50%,-50%) rotate(-45deg);
+}
+.btnd4:hover::before{
+height: 450%;
+}
+
+.btnd5::before{
+  width: 100%;
+  height: 0%;
+  border-radius: 30%;
+ }
+.btnd5:hover::before{
+height: 450%;
+}
+
+.btnd6::before{
+  width: 0%;
+  height: 100%;
+  border-radius: 30%;
+ }
+.btnd6:hover::before{
+  width: 450%;
+}
+
+  /* Barra inferior com menu, agora abre para cima */
+  #bottom-bar {
+    position: fixed;
+    bottom: 0;
+    height: 90px;
+    width: 100%;
+    background-repeat: repeat-x;
+    background-position: top;
+    background-size: cover;
+    padding: 10px 0;
+    box-sizing:border-box;
+    display: flex;
+    justify-content: center;
+    /* Nova animação para abrir para cima */
+    transform: translateY(100%);
+    animation: slideUp 1s forwards;
+    z-index: 5;
+  }
+  .btn-text{
+    position: relative;
+    z-index: 11;
+    font-size:15;
+
+}
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  /* Menu estilo padrão */
+  #menu {
+    position: relative;
+    float: left;
+    width: 100%;
+    padding: 0 20px;
+    border-radius: 3px;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.5),
+                inset 0 -1px 0 rgba(0,0,0,.15),
+                0 1px 3px rgba(0,0,0,.15);
+    background: #ccc;
+  }
+
+  #menu, #menu ul {
+    list-style: none;
+  }
+
+  #menu > li {
+    float: left;
+    position: relative;
+    border-right: 1px solid rgba(0,0,0,.1);
+    box-shadow: 1px 0 0 rgba(255,255,255,.25);
+  }
+
+  #menu > li:first-child {
+    border-left: 1px solid rgba(255,255,255,.25);
+    box-shadow: -1px 0 0 rgba(0,0,0,.1), 1px 0 0 rgba(255,255,255,.25);
+  }
+
+  #menu a {
+    display: block;
+    padding: 13px 20px;
+    text-decoration: none;
+    color: rgba(75,75,75,1);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: -.05em;
+    background: transparent;		
+    text-shadow: 0 1px 1px rgba(255,255,255,.9);
+    transition: all .25s ease-in-out;
+  }
+
+  #menu > li:hover > a {
+    background: #333;
+    color: rgba(0,223,252,1);
+    text-shadow: none;
+  }
+
+  /* Menu dropdown que abre para cima, com transição de altura */
+  #menu li ul {
+    position: absolute;
+    bottom: 100%; /* abre para cima */
+    left: 0;
+    z-index: 1;
+    width: 200px;
+    max-height: 0;
+    overflow: hidden;
+    background: #333;
+    border-radius: 4px;
+    box-shadow: 1px 1px 7px rgba(0,0,0,.5);
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  #menu li:hover ul {
+    max-height: 1000px; /* grande o suficiente para o conteúdo */
+    opacity: 1;
+  }
+
+  #menu li ul li a {
+    padding: 10px 15px;
+    display: block;
+    color: #ddd;
+  }
+
+  #menu li ul li a:hover {
+    background: rgba(0,223,252,.2);
+  }
+
+  /* Definir la fuente Cityworm-Bold */
+@font-face {
+  font-family: 'Cityworm';
+  src: url('fonts/Cityworm-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+/* Definir la fuente Cityworm normal */
+@font-face {
+  font-family: 'Cityworm';
+  src: url('fonts/Cityworm.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+.topomain{
+  position: absolute;
+  display: flex;
+  top: 0;
+  z-index: -999;
+  width: 100%vh;
+  justify-content: center;
+}
+.titdesktop{
+  position: relative;
+  top: 3px;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 10px;
+  font-size: 80px;
+  font-family: 'Cityworm';
+  color: rgba(245, 238, 238, 0.856);
+
+}
+
+
+/* Usar la fuente en el cuerpo */
+</style>
+</head>
+<body>
+<div class="topomain">
+  <h1><span class="titdesktop">DESKTOP</span> </span> </h1>
+</div>
+
+
+<!-- Fundo de vídeo -->
+<video id="video-background" autoplay muted loop playsinline>
+  <source src="img/vbg/vbg.mp4" type="video/mp4" />
+</video>
+
+<!-- Botões do lado esquerdo -->
+<div class="btnesquerda">
+ <a href="http://ivanbsfworkspace.wuaze.com/" class="btne btne1" target="_blank"><span class="btn-text">WORKSPACE</span></a> 
+ <a href="https://maydaydesastresaereos.github.io/" class="btne btne2" target="_blank"><span class="btn-text">MAYDAY</span></a> 
+ <a href="https://aviation-hub.github.io/" class="btne btne3" target="_blank"><span class="btn-text">AVIATION HUB</span></a> 
+ <a href="https://chat.openai.com/chat" class="btne btne4" target="_blank"><span class="btn-text">CHATGPT</span></a> 
+ <a href="https://deepai.org/" class="btne btne5" target="_blank"><span class="btn-text">DEEP A.I.</span></a> 
+ <a href="https://chat.deepseek.com/" class="btne btne6" target="_blank"><span class="btn-text">DEEP SEEK</span></a> 
+</div> 
+
+<div class="btndireita">
+  <a href="https://duckduckgo.com/?q=DuckDuckGo+AI+Chat&ia=chat&duckai=1" class="btnd btnd1" target="_blank"><span class="btn-text">DUCK A.I.</span></a> 
+  <a href="https://copilot.microsoft.com/" class="btnd btnd2" target="_blank"><span class="btn-text">COPILOT</span></a> 
+  <a href="https://github.com/ivanbsf?tab=repositories" class="btnd btnd3" target="_blank"><span class="btn-text">GITHUB</span></a> 
+  <a href="https://calendar.google.com/" class="btnd btnd4" target="_blank"><span class="btn-text">CALENDÁRIO</span></a> 
+  <a href="https://advocaciabotelho.github.io/" class="btnd btnd5" target="_blank"><span class="btn-text">ADVOCACIA</span></a> 
+  <a href="https://drive.google.com/drive/folders/1DxQf2abdErqiCvD0ANvwahrYmJKpKDmd?usp=sharing" class="btnd btnd6" target="_blank"><span class="btn-text">GoogleDrive</span></a> 
+ </div> 
+
+<!-- Barra inferior com menu -->
+<div id="bottom-bar">
+  <ul id="menu">
+    <li>
+      <a href="#">PROFISSIONAL</a>
+      <ul>
+        <li><a href="http://www.pje.jus.br/navegador/" target="_blank">PJE</a></li>
+        <li><a href="https://pje.tjmg.jus.br/pje/login.seam" target="_blank">PJE_TJMG</a></li>
+        <li><a href="https://pje.trt3.jus.br/primeirograu/login.seam" target="_blank">PJE_TRT3</a></li>
+        <li><a href="https://www.tjmg.jus.br/portal-tjmg/" target="_blank">TJMG</a></li>
+        <li><a href="https://www5.tjmg.jus.br/jurisprudencia/formEspelhoAcordao.do" target="_blank">TJMG-Jurisprudencia</a></li>
+        <li><a href="http://www.portalsigpri.mg.gov.br/" target="_blank">Sigpri</a></li>
+        <li><a href="https://transito.mg.gov.br/veiculos/certidoes-pesquisa/certidao-negativa-de-propriedade" target="_blank">CNProp - Detran</a></li>
+        <li><a href="https://drive.google.com/drive/folders/1tsIxZ_zGVTKOJtS2ULzZe9KvwRESalhg" target="_blank">GoogleDrive</a></li>
+        <li><a href="https://1drv.ms/f/s!ApSpV2Z9Q9aCikI6c6UBUPcGHK4H?e=rWA12Z" target="_blank">OneDrive</a></li>
+        <li><a href="https://web.whatsapp.com/" target="_blank">WhatsappWeb</a></li>
+        <li><a href="https://outlook.live.com" target="_blank">EMAIL</a></li>
+        <li><a href="https://drive.google.com/drive/folders/1DxQf2abdErqiCvD0ANvwahrYmJKpKDmd?usp=sharing" target="_blank">WORK ONLINE</a></li>
+        <li><a href="http://ivanbsfworkspace.wuaze.com/" target="_blank">WORKSPACE</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#">ENTRETENIMENTO</a>
+      <ul>
+        <li><a href="https://auth.max.com/profile-picker?flow=login" target="_blank">HBO MAX</a></li>
+        <li><a href="https://www.netflix.com/browse" target="_blank">NETFLIX</a></li>
+        <li><a href="https://comandotorrent.top/" target="_blank">CommandoTorrnt</a></li>
+        <li><a href="https://baixafilmestorrent.com/" target="_blank">FILMES</a></li>
+        <li><a href="https://misterfilmes.org/" target="_blank">MisterFilmes</a></li>
+        <li><a href="https://www.cavokvideos.com/" target="_blank">CAVOK Videos</a></li>
+        <li><a href="https://www.youtube.com/" target="_blank">YOUTUBE</a></li>
+        <li><a href="https://superfilmes.la/series/assistir-online-dr-house/" target="_blank">Dr. House</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#">A.I.</a>
+      <ul>
+            <li> <a href="https://chat.openai.com/chat">ChatGPT</a></li>
+            <li> <a href="https://deepai.org/">DeepAi</a></li>
+            <li> <a href="https://chat.deepseek.com/">DeepSeek</a></li>
+            <li> <a href="https://gemini.google.com/app?hl=pt-BR">Gemini</a></li>
+            <li> <a href="https://www.bing.com/create">Bing image</a></li>
+
+      </ul>
+      <li>
+      <a href="#">FERRAMENTAS</a>
+      <ul>
+        <li> <a href="https://mega.nz/">MEGA.NZ</a></li>
+        <li> <a href="https://yt1s.com/pt14">YOUTUBE to MP3</a></li>
+        <li> <a href="https://www.ilovepdf.com/pt">ILovePDF</a></li>
+        <li> <a href="https://languagetool.org/pt-BR">Corretor</a></li>
+        <li> <a href="https://ezgif.com/">GIF Tools</a></li>
+        <li> <a href="https://onlinealarmkur.com/pt/">DESPERTADOR</a></li>
+        <li> <a href="https://imgur.com/">IMGUR</a></li>
+        <li> <a href="https://discord.com/channels/@me">DISCORD</a></li>
+        <li> <a href="https://br.uptodown.com/windows/utilities">Utilitários</a></li>
+        <li> <a href="https://www.speedtest.net/pt">Internet Speed</a></li>
+      </ul>
+        <li> <a href="#">Agente de Saúde</a>
+          <ul>
+          <li> <a href="https://sistemas.saojosedalapa.mg.gov.br/portalcidadao/#075f539f0b7223f116d2c85c4ce1b1752fccb0db1fd92284312b33310fb199ef6050e9373e0f36365cbb7737a0e49e582e657146a648fd13d54aa9e4338df879e807578fb1eeafd7afcb25fdefc85bbc81c89f981e3042d9e9f7b87624559a4ad31fe43db0a52d0dd8bc9b19235732d4ed6320500f76e0aebce45da10b904fcda4ca69c1012b854a" target="_blank">Holerite</a></li>
+          <li> <a href="https://sistemas.saojosedalapa.mg.gov.br/portalcidadao/#efb33c382dcf9e4ae2294337ce2a566034ee25478c90493e56f55878a4d19d547154abb93a539ca141901243121b0442f68667740d76583a9b6fc842805a701255f50abffb83548323feb3d4a215dcba05fc4b5b868699999c1d78af95bbbed2ae7ab27d940f9f7a8b2debb75557ba1cd7f6303c3be5a0edaecf72a00208c722773c5ec1c75725b2" target="_blank">Transparência</a></li>
+          <li> <a href="https://www.saojosedalapa.mg.gov.br/portal/leis_decretos">Publicações</a></li>
+          <li> <a href="https://www.saojosedalapa.mg.gov.br/portal/editais/0/3/1143/" target="_blank">Concurso</a></li>
+          <li> <a href="">ACS</a></li>
+          <li> <a href="http://177.55.188.6:8099/pec" target="_blank">PEC-externo</a></li>
+          <li> <a href="https://relatorioaps.saude.gov.br/gerenciaaps/pagamento" target="_blank">Repasse</a></li>
+          <li> <a href="https://relatorioaps.saude.gov.br/gerenciaaps/pagamento" target="_blank">e-Gestor</a></li>
+          <li> <a href="https://consultafns.saude.gov.br/#/detalhada/acao" target="_blank">FNS</a></li>
+          <li> <a href="https://cnes.datasus.gov.br/pages/profissionais/consulta.jsp" target="_blank">CNES</a></li>
+          <li> <a href="https://ivanbsf.github.io/sitema_microarea/" target="_blank">SistemaMicroarea</a></li>
+        </ul>
+       </li>
+  </ul>
+</div>
+
+</body>
+</html>
