@@ -1,0 +1,22 @@
+body {
+    background: #121212;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+input, button {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 6px;
+    border: none;
+}
+
+button {
+    cursor: pointer;
+}
+
+.saldos {
+    font-size: 20px;
+    margin: 15px;
+}

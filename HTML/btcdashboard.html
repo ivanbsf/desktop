@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>BTC Dashboard – Watch Only</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div id="login">
+    <h2>Login</h2>
+    <input type="password" id="senha" placeholder="Senha">
+    <button onclick="autenticar()">Entrar</button>
+    <p id="erro"></p>
+</div>
+
+<div id="dashboard" hidden>
+    <h1>BTC Dashboard</h1>
+
+    <div class="saldos">
+        <div id="btc">...</div>
+        <div id="sats">...</div>
+        <div id="fiat">...</div>
+    </div>
+
+    <div class="botoes">
+        <button onclick="copiarEndereco()">📋 Copiar endereço</button>
+        <button onclick="alternarMoeda()">💱 BRL / USD</button>
+        <button onclick="atualizarDados()">🔄 Atualizar</button>
+    </div>
+
+    <canvas id="grafico"></canvas>
+
+    <div class="periodos">
+        <button onclick="carregarGrafico(1)">📅 Diário</button>
+        <button onclick="carregarGrafico(30)">📆 Mensal</button>
+        <button onclick="carregarGrafico(365)">📈 Anual</button>
+    </div>
+
+    <p id="status"></p>
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
