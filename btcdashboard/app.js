@@ -81,3 +81,29 @@ function alternarMoeda() {
 function copiarEndereco() {
     navigator.clipboard.writeText(ENDERECO_BTC);
 }
+
+async function carregarPrecoBTC() {
+    try {
+        const response = await fetch(
+            "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,brl"
+        );
+        const data = await response.json();
+
+        document.getElementById("btc-usd").innerText =
+            "$ " + data.bitcoin.usd.toLocaleString("en-US");
+
+        document.getElementById("btc-brl").innerText =
+            "R$ " + data.bitcoin.brl.toLocaleString("pt-BR");
+
+    } catch (erro) {
+        document.getElementById("btc-usd").innerText = "Erro";
+        document.getElementById("btc-brl").innerText = "Erro";
+        console.error("Erro ao carregar preço BTC:", erro);
+    }
+}
+
+// carrega ao abrir a página
+carregarPrecoBTC();
+
+// atualiza automaticamente a cada 60 segundos
+setInterval(carregarPrecoBTC, 60000);
