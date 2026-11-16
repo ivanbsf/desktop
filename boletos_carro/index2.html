@@ -1,1384 +1,503 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestão de Boletos — Financiamento Daycoval</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-primary: #0f1115;
-      --bg-secondary: #161920;
-      --bg-card: #1c2029;
-      --bg-card-hover: #232834;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --border-accent: rgba(56, 189, 248, 0.4);
-      --text-primary: #f1f5f9;
-      --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      --accent: #38bdf8;
-      --accent-hover: #0ea5e9;
-      --accent-glow: rgba(56, 189, 248, 0.15);
-      --success: #10b981;
-      --success-bg: rgba(16, 185, 129, 0.12);
-      --warning: #f59e0b;
-      --warning-bg: rgba(245, 158, 11, 0.12);
-      --danger: #ef4444;
-      --danger-bg: rgba(239, 68, 68, 0.12);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-primary);
-      background-image: 
-        radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.06), transparent 35%),
-        radial-gradient(circle at 85% 90%, rgba(16, 185, 129, 0.05), transparent 35%);
-      color: var(--text-primary);
-      min-height: 100vh;
-      line-height: 1.5;
-      padding: 2rem 1rem 4rem;
-    }
-
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-    }
-
-    /* Header */
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      padding-bottom: 1.25rem;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-    }
-
-    .brand-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #0284c7, #38bdf8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #0f1115;
-      font-weight: 700;
-      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.25);
-    }
-
-    .brand h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .brand p {
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      flex-wrap: wrap;
-    }
-
-    .contract-badge {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      padding: 0.5rem 0.9rem;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .contract-badge strong {
-      color: var(--text-primary);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .btn-sync-config {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      padding: 0.5rem 0.85rem;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      transition: all 0.2s ease;
-    }
-
-    .btn-sync-config:hover {
-      border-color: var(--accent);
-      color: var(--text-primary);
-    }
-
-    .sync-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--text-muted);
-    }
-
-    .sync-dot.connected {
-      background: var(--success);
-      box-shadow: 0 0 8px var(--success);
-    }
-
-    .sync-dot.syncing {
-      background: var(--warning);
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    /* Progress Bar */
-    .progress-section {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-    }
-
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.82rem;
-      color: var(--text-secondary);
-    }
-
-    .progress-header span strong {
-      color: var(--text-primary);
-    }
-
-    .progress-track {
-      width: 100%;
-      height: 8px;
-      background: var(--bg-primary);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #0284c7, #38bdf8);
-      border-radius: 999px;
-      transition: width 0.4s ease;
-    }
-
-    /* Featured Boleto Card */
-    .featured-card {
-      background: linear-gradient(145deg, #1c222d, #161a22);
-      border: 1px solid var(--border-accent);
-      border-radius: 20px;
-      padding: 1.75rem;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(56, 189, 248, 0.08);
-      margin-bottom: 2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .featured-top {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .status-group {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-    }
-
-    .parcela-tag {
-      background: var(--accent-glow);
-      color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      font-weight: 600;
-      font-size: 0.82rem;
-      padding: 0.3rem 0.75rem;
-      border-radius: 999px;
-    }
-
-    .status-badge {
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 0.3rem 0.75rem;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .status-atual {
-      background: var(--warning-bg);
-      color: var(--warning);
-      border: 1px solid rgba(245, 158, 11, 0.25);
-    }
-
-    .status-vencido {
-      background: var(--danger-bg);
-      color: var(--danger);
-      border: 1px solid rgba(239, 68, 68, 0.25);
-    }
-
-    .status-futuro {
-      background: rgba(148, 163, 184, 0.12);
-      color: var(--text-secondary);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-    }
-
-    .status-pago {
-      background: var(--success-bg);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-    }
-
-    .nav-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .btn-nav {
-      background: var(--bg-card);
-      color: var(--text-primary);
-      border: 1px solid var(--border-color);
-      padding: 0.5rem 0.85rem;
-      border-radius: 10px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      transition: all 0.2s ease;
-    }
-
-    .btn-nav:hover:not(:disabled) {
-      background: var(--bg-card-hover);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .btn-nav:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .btn-today {
-      background: rgba(56, 189, 248, 0.1);
-      color: var(--accent);
-      border-color: rgba(56, 189, 248, 0.25);
-    }
-
-    /* Info Grid */
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.5rem;
-      padding: 1.25rem;
-      background: rgba(15, 17, 21, 0.55);
-      border-radius: 14px;
-      border: 1px solid var(--border-color);
-    }
-
-    .info-item label {
-      display: block;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin-bottom: 0.25rem;
-    }
-
-    .info-item .value {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .info-item .value.highlight-price {
-      font-size: 1.35rem;
-      color: #38bdf8;
-      font-weight: 700;
-    }
-
-    .info-item .sub {
-      font-size: 0.76rem;
-      color: var(--text-secondary);
-      margin-top: 0.15rem;
-    }
-
-    /* Barcode Box */
-    .barcode-box {
-      background: #0d0f13;
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 1.15rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-    }
-
-    .barcode-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-    }
-
-    .barcode-line {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.05rem;
-      font-weight: 500;
-      color: #e2e8f0;
-      letter-spacing: 0.03em;
-      word-break: break-all;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 0.85rem 1rem;
-      border-radius: 10px;
-      border: 1px dashed rgba(255, 255, 255, 0.12);
-      user-select: all;
-    }
-
-    .actions-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    .btn-copy {
-      flex: 1;
-      min-width: 220px;
-      background: linear-gradient(135deg, #0284c7, #38bdf8);
-      color: #090d16;
-      border: none;
-      padding: 0.9rem 1.5rem;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.55rem;
-      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
-      box-shadow: 0 4px 18px rgba(56, 189, 248, 0.28);
-    }
-
-    .btn-copy:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 24px rgba(56, 189, 248, 0.4);
-    }
-
-    .btn-copy:active {
-      transform: translateY(0);
-    }
-
-    .btn-copy.copied {
-      background: linear-gradient(135deg, #059669, #10b981);
-      color: #ffffff;
-      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
-    }
-
-    .btn-paid-toggle {
-      background: var(--bg-card);
-      color: var(--text-secondary);
-      border: 1px solid var(--border-color);
-      padding: 0.9rem 1.15rem;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      transition: all 0.2s ease;
-    }
-
-    .btn-paid-toggle:hover {
-      border-color: var(--success);
-      color: var(--success);
-    }
-
-    .btn-paid-toggle.is-paid {
-      background: var(--success-bg);
-      border-color: rgba(16, 185, 129, 0.35);
-      color: var(--success);
-    }
-
-    /* Search & Filter Toolbar */
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.85rem;
-      margin-bottom: 1.25rem;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .search-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.65rem;
-      flex: 1;
-    }
-
-    .input-wrapper {
-      position: relative;
-      flex: 1;
-      min-width: 210px;
-    }
-
-    .input-wrapper svg {
-      position: absolute;
-      left: 0.85rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-      pointer-events: none;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    select {
-      width: 100%;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      padding: 0.7rem 0.9rem 0.7rem 2.5rem;
-      border-radius: 11px;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.88rem;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    input[type="password"] {
-      padding-left: 0.9rem;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    select {
-      padding-left: 0.9rem;
-      max-width: 170px;
-      cursor: pointer;
-    }
-
-    input[type="text"]:focus,
-    input[type="password"]:focus,
-    select:focus {
-      border-color: var(--accent);
-    }
-
-    .btn-clear {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      padding: 0.7rem 1rem;
-      border-radius: 11px;
-      font-size: 0.84rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-clear:hover {
-      background: var(--bg-card);
-      color: var(--text-primary);
-    }
-
-    /* List of All Parcels */
-    .list-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.85rem;
-    }
-
-    .list-header h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .list-count {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-
-    .parcelas-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-      gap: 0.85rem;
-    }
-
-    .parcela-item {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 1rem 1.1rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
-    }
-
-    .parcela-item:hover {
-      background: var(--bg-card);
-      border-color: rgba(255, 255, 255, 0.16);
-      transform: translateY(-2px);
-    }
-
-    .parcela-item.selected {
-      border-color: var(--accent);
-      background: linear-gradient(145deg, rgba(56, 189, 248, 0.08), var(--bg-card));
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2);
-    }
-
-    .parcela-item.is-paid {
-      opacity: 0.72;
-    }
-
-    .item-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .item-plano {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-    }
-
-    .item-date {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .item-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 0.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .item-valor {
-      font-weight: 600;
-      font-size: 0.92rem;
-      color: var(--text-primary);
-    }
-
-    .btn-mini-copy {
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      padding: 0.32rem 0.65rem;
-      border-radius: 8px;
-      font-size: 0.76rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .btn-mini-copy:hover {
-      background: var(--accent);
-      color: #090d16;
-    }
-
-    .empty-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 3rem 1rem;
-      background: var(--bg-secondary);
-      border: 1px dashed var(--border-color);
-      border-radius: 14px;
-      color: var(--text-secondary);
-    }
-
-    /* Modal GitHub Token */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      z-index: 1000;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
-    .modal-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-accent);
-      border-radius: 18px;
-      max-width: 460px;
-      width: 100%;
-      padding: 1.5rem;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .modal-box h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-    }
-
-    .modal-box p {
-      font-size: 0.84rem;
-      color: var(--text-secondary);
-      line-height: 1.55;
-    }
-
-    .modal-box code {
-      background: rgba(255, 255, 255, 0.07);
-      padding: 0.12rem 0.4rem;
-      border-radius: 5px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.78rem;
-      color: var(--accent);
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.6rem;
-      margin-top: 0.25rem;
-    }
-
-    .btn-primary-sm {
-      background: linear-gradient(135deg, #0284c7, #38bdf8);
-      color: #090d16;
-      border: none;
-      padding: 0.65rem 1.1rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn-danger-sm {
-      background: var(--danger-bg);
-      color: var(--danger);
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      padding: 0.65rem 0.9rem;
-      border-radius: 10px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-right: auto;
-    }
-
-    /* Toast Notification */
-    .toast {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      background: #10b981;
-      color: #ffffff;
-      padding: 0.85rem 1.25rem;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transform: translateY(120%);
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 999;
-    }
-
-    .toast.error {
-      background: #ef4444;
-    }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    @media (max-width: 600px) {
-      .featured-card {
-        padding: 1.25rem;
-      }
-      .barcode-line {
-        font-size: 0.92rem;
-      }
-      .nav-controls {
-        width: 100%;
-        justify-content: space-between;
-      }
-      .btn-nav {
-        flex: 1;
-        justify-content: center;
-      }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gestão de Boletos — Financiamento Daycoval</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg-primary:#0f1115;--bg-secondary:#161920;--bg-card:#1c2029;--bg-card-hover:#232834;--border-color:rgba(255,255,255,.08);--border-accent:rgba(56,189,248,.4);--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;--accent:#38bdf8;--accent-glow:rgba(56,189,248,.15);--success:#10b981;--success-bg:rgba(16,185,129,.12);--warning:#f59e0b;--warning-bg:rgba(245,158,11,.12);--danger:#ef4444;--danger-bg:rgba(239,68,68,.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background-color:var(--bg-primary);background-image:radial-gradient(circle at 15% 10%,rgba(56,189,248,.06),transparent 35%),radial-gradient(circle at 85% 90%,rgba(16,185,129,.05),transparent 35%);color:var(--text-primary);min-height:100vh;line-height:1.5;padding:2rem 1rem 4rem}
+.container{max-width:960px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border-color)}
+.brand{display:flex;align-items:center;gap:.85rem}
+.brand-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0284c7,#38bdf8);display:flex;align-items:center;justify-content:center;color:#0f1115;font-weight:700;box-shadow:0 4px 20px rgba(56,189,248,.25)}
+.brand h1{font-size:1.25rem;font-weight:700;letter-spacing:-.02em}
+.brand p{font-size:.82rem;color:var(--text-secondary)}
+.header-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.contract-badge{background:var(--bg-card);border:1px solid var(--border-color);padding:.5rem .9rem;border-radius:10px;font-size:.8rem;color:var(--text-secondary);display:flex;align-items:center;gap:.5rem}
+.contract-badge strong{color:var(--text-primary);font-family:'JetBrains Mono',monospace}
+.btn-settings{background:var(--bg-card);border:1px solid var(--border-color);color:var(--text-secondary);padding:.5rem .9rem;border-radius:10px;font-size:.8rem;cursor:pointer;transition:all .2s}
+.btn-settings:hover{border-color:var(--accent);color:var(--accent)}
+.progress-section{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.75rem;display:flex;flex-direction:column;gap:.6rem}
+.progress-header{display:flex;justify-content:space-between;font-size:.82rem;color:var(--text-secondary)}
+.progress-header span strong{color:var(--text-primary)}
+.progress-track{width:100%;height:8px;background:var(--bg-primary);border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#0284c7,#38bdf8);border-radius:999px;transition:width .4s ease}
+.featured-card{background:linear-gradient(145deg,#1c222d,#161a22);border:1px solid var(--border-accent);border-radius:20px;padding:1.75rem;box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 0 1px rgba(56,189,248,.08);margin-bottom:2rem;position:relative;overflow:hidden}
+.featured-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.status-group{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.parcela-tag{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(56,189,248,.25);font-weight:600;font-size:.82rem;padding:.3rem .75rem;border-radius:999px}
+.status-badge{font-size:.78rem;font-weight:600;padding:.3rem .75rem;border-radius:999px;display:inline-flex;align-items:center;gap:.35rem}
+.status-atual{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(245,158,11,.25)}
+.status-vencido{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(239,68,68,.25)}
+.status-futuro{background:rgba(148,163,184,.12);color:var(--text-secondary);border:1px solid rgba(148,163,184,.2)}
+.status-pago{background:var(--success-bg);color:var(--success);border:1px solid rgba(16,185,129,.25)}
+.nav-controls{display:flex;align-items:center;gap:.5rem}
+.btn-nav{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);padding:.5rem .85rem;border-radius:10px;font-size:.82rem;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:.35rem;transition:all .2s ease}
+.btn-nav:hover:not(:disabled){background:var(--bg-card-hover);border-color:var(--accent);color:var(--accent)}
+.btn-nav:disabled{opacity:.4;cursor:not-allowed}
+.btn-today{background:rgba(56,189,248,.1);color:var(--accent);border-color:rgba(56,189,248,.25)}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-bottom:1.5rem;padding:1.25rem;background:rgba(15,17,21,.55);border-radius:14px;border:1px solid var(--border-color)}
+.info-item label{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.25rem}
+.info-item .value{font-size:1.05rem;font-weight:600;color:var(--text-primary)}
+.info-item .value.highlight-price{font-size:1.35rem;color:#38bdf8;font-weight:700}
+.info-item .sub{font-size:.76rem;color:var(--text-secondary);margin-top:.15rem}
+.barcode-box{background:#0d0f13;border:1px solid var(--border-color);border-radius:14px;padding:1.15rem 1.25rem;display:flex;flex-direction:column;gap:.9rem}
+.barcode-header{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--text-secondary)}
+.barcode-line{font-family:'JetBrains Mono',monospace;font-size:1.05rem;font-weight:500;color:#e2e8f0;letter-spacing:.03em;word-break:break-all;background:rgba(255,255,255,.03);padding:.85rem 1rem;border-radius:10px;border:1px dashed rgba(255,255,255,.12);user-select:all}
+.actions-row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.btn-copy{flex:1;min-width:220px;background:linear-gradient(135deg,#0284c7,#38bdf8);color:#090d16;border:none;padding:.9rem 1.5rem;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:.55rem;transition:transform .15s ease,box-shadow .2s ease;box-shadow:0 4px 18px rgba(56,189,248,.28)}
+.btn-copy:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(56,189,248,.4)}
+.btn-copy:active{transform:translateY(0)}
+.btn-copy.copied{background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 4px 18px rgba(16,185,129,.35)}
+.btn-paid-toggle{background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border-color);padding:.9rem 1.15rem;border-radius:12px;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;transition:all .2s ease}
+.btn-paid-toggle:hover{border-color:var(--success);color:var(--success)}
+.btn-paid-toggle.is-paid{background:var(--success-bg);border-color:rgba(16,185,129,.35);color:var(--success)}
+.btn-paid-toggle:disabled{opacity:.5;cursor:wait}
+.toolbar{display:flex;flex-wrap:wrap;gap:.85rem;margin-bottom:1.25rem;align-items:center;justify-content:space-between}
+.search-group{display:flex;flex-wrap:wrap;gap:.65rem;flex:1}
+.input-wrapper{position:relative;flex:1;min-width:210px}
+.input-wrapper svg{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
+input[type=text],select{width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);color:var(--text-primary);padding:.7rem .9rem .7rem 2.5rem;border-radius:11px;font-family:'Inter',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s ease}
+select{padding-left:.9rem;max-width:170px;cursor:pointer}
+input[type=text]:focus,select:focus{border-color:var(--accent)}
+.btn-clear{background:transparent;border:1px solid var(--border-color);color:var(--text-secondary);padding:.7rem 1rem;border-radius:11px;font-size:.84rem;cursor:pointer;transition:all .2s ease}
+.btn-clear:hover{background:var(--bg-card);color:var(--text-primary)}
+.list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem}
+.list-header h2{font-size:1rem;font-weight:600}
+.list-count{font-size:.8rem;color:var(--text-secondary)}
+.parcelas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:.85rem}
+.parcela-item{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1rem 1.1rem;cursor:pointer;transition:all .2s ease;display:flex;flex-direction:column;gap:.65rem}
+.parcela-item:hover{background:var(--bg-card);border-color:rgba(255,255,255,.16);transform:translateY(-2px)}
+.parcela-item.selected{border-color:var(--accent);background:linear-gradient(145deg,rgba(56,189,248,.08),var(--bg-card));box-shadow:0 0 0 1px rgba(56,189,248,.2)}
+.parcela-item.is-paid{opacity:.72}
+.item-top{display:flex;justify-content:space-between;align-items:center}
+.item-plano{font-weight:700;font-size:.9rem}
+.item-date{font-size:.88rem;color:var(--text-secondary);display:flex;align-items:center;gap:.4rem}
+.item-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:.5rem;border-top:1px solid rgba(255,255,255,.05)}
+.item-valor{font-weight:600;font-size:.92rem}
+.btn-mini-copy{background:rgba(56,189,248,.12);color:var(--accent);border:1px solid rgba(56,189,248,.2);padding:.32rem .65rem;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .15s ease}
+.btn-mini-copy:hover{background:var(--accent);color:#090d16}
+.empty-state{grid-column:1/-1;text-align:center;padding:3rem 1rem;background:var(--bg-secondary);border:1px dashed var(--border-color);border-radius:14px;color:var(--text-secondary)}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#10b981;color:#fff;padding:.85rem 1.25rem;border-radius:12px;font-size:.88rem;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;align-items:center;gap:.5rem;transform:translateY(120%);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);z-index:999}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:#dc2626}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:1rem;z-index:1000}
+.modal.open{display:flex}
+.modal-box{background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:1.5rem;width:100%;max-width:460px;display:flex;flex-direction:column;gap:.8rem}
+.modal-box h3{font-size:1.05rem}
+.modal-box label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.modal-box input{width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);color:var(--text-primary);padding:.65rem .8rem;border-radius:10px;font-size:.88rem;outline:none}
+.modal-box input:focus{border-color:var(--accent)}
+.modal-box small{color:var(--text-secondary);font-size:.76rem}
+.modal-actions{display:flex;gap:.6rem;justify-content:flex-end}
+@media(max-width:600px){.featured-card{padding:1.25rem}.barcode-line{font-size:.92rem}.nav-controls{width:100%;justify-content:space-between}.btn-nav{flex:1;justify-content:center}}
+</style>
 </head>
 <body>
-
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="5" width="20" height="14" rx="2" />
-            <line x1="2" y1="10" x2="22" y2="10" />
-          </svg>
-        </div>
-        <div>
-          <h1>Gestão de Boletos</h1>
-          <p>Pagador: Ivan Botelho Santos Filho</p>
-        </div>
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       </div>
-
-      <div class="header-actions">
-        <button class="btn-sync-config" id="btn-open-sync" title="Configurar sincronização automática no GitHub">
-          <span class="sync-dot" id="sync-dot"></span>
-          <span id="sync-status-label">Sync GitHub</span>
-        </button>
-
-        <div class="contract-badge">
-          <span>Contrato:</span>
-          <strong>14-3674716/26</strong>
-        </div>
-      </div>
-    </header>
-
-    <!-- Progresso das Parcelas -->
-    <section class="progress-section">
-      <div class="progress-header">
-        <span id="progress-label">Progresso do financiamento</span>
-        <span><strong id="paid-count">0</strong> de <strong>48</strong> parcelas pagas</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
-      </div>
-    </section>
-
-    <!-- Cartão Principal do Boleto Selecionado / Mês Atual -->
-    <main class="featured-card" id="featured-card">
-      <div class="featured-top">
-        <div class="status-group">
-          <span class="parcela-tag" id="feat-plano">Parcela 001/048</span>
-          <span class="status-badge status-atual" id="feat-status">Mês Atual</span>
-        </div>
-
-        <div class="nav-controls">
-          <button class="btn-nav" id="btn-prev" title="Mês anterior">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
-            Anterior
-          </button>
-          <button class="btn-nav btn-today" id="btn-current-month" title="Ir para o vencimento do mês atual">
-            Mês Atual
-          </button>
-          <button class="btn-nav" id="btn-next" title="Próximo mês">
-            Próximo
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="info-grid">
-        <div class="info-item">
-          <label>Beneficiário</label>
-          <div class="value">Banco Daycoval S.A.</div>
-          <div class="sub">Daycoval - Financeira Veículos</div>
-        </div>
-        <div class="info-item">
-          <label>Data de Vencimento</label>
-          <div class="value" id="feat-vencimento">24/04/2026</div>
-          <div class="sub" id="feat-mes-extenso">Abril de 2026</div>
-        </div>
-        <div class="info-item">
-          <label>Valor do Documento</label>
-          <div class="value highlight-price" id="feat-valor">R$ 2.323,20</div>
-          <div class="sub">Multa 2% + mora R$ 3,15/dia após venc.</div>
-        </div>
-      </div>
-
-      <div class="barcode-box">
-        <div class="barcode-header">
-          <span>Linha Digitável (Código para Pagamento)</span>
-          <span id="feat-digits-mode">47 dígitos</span>
-        </div>
-        <div class="barcode-line" id="feat-codigo">
-          70790.00118 21154.691204 12296.407443 6 14260000232320
-        </div>
-        <div class="actions-row">
-          <button class="btn-copy" id="btn-copy-main">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            <span id="btn-copy-text">Copiar Código do Boleto</span>
-          </button>
-          <button class="btn-paid-toggle" id="btn-toggle-paid">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
-            <span id="btn-paid-text">Marcar como Pago</span>
-          </button>
-        </div>
-      </div>
-    </main>
-
-    <!-- Busca e Filtros -->
-    <section class="toolbar">
-      <div class="search-group">
-        <div class="input-wrapper">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="search-input" placeholder="Buscar por vencimento (ex: 24/12/2026, 05/2027 ou parcela)..." />
-        </div>
-
-        <select id="year-filter" aria-label="Filtrar por ano">
-          <option value="all">Todos os anos</option>
-          <option value="2026">2026</option>
-          <option value="2027">2027</option>
-          <option value="2028">2028</option>
-          <option value="2029">2029</option>
-          <option value="2030">2030</option>
-        </select>
-
-        <button class="btn-clear" id="btn-reset-filters">Limpar</button>
-      </div>
-    </section>
-
-    <!-- Lista de Todas as Parcelas -->
-    <section>
-      <div class="list-header">
-        <h2>Todas as Parcelas</h2>
-        <span class="list-count" id="list-count">Exibindo 48 de 48 parcelas</span>
-      </div>
-      <div class="parcelas-grid" id="parcelas-grid"></div>
-    </section>
-  </div>
-
-  <!-- Modal de Configuração do Token GitHub -->
-  <div class="modal-backdrop" id="sync-modal">
-    <div class="modal-box">
-      <h3>Sincronização Automática com GitHub</h3>
-      <p>
-        Insira seu <strong>Personal Access Token (PAT)</strong> com permissão de escrita em <code>Contents</code> no repositório <code>ivanbsf/desktop</code>.
-        Sempre que você marcar ou desmarcar uma parcela como paga, o arquivo <code>boletos_carro/boletos_financiamento.js</code> será atualizado automaticamente no GitHub Pages.
-      </p>
-      <input type="password" id="github-token-input" placeholder="github_pat_... ou ghp_..." />
-      <div class="modal-actions">
-        <button class="btn-danger-sm" id="btn-remove-token" style="display:none;">Remover Token</button>
-        <button class="btn-clear" id="btn-close-modal">Cancelar</button>
-        <button class="btn-primary-sm" id="btn-save-token">Salvar Token</button>
+      <div>
+        <h1>Gestão de Boletos</h1>
+        <p>Pagador: Ivan Botelho Santos Filho</p>
       </div>
     </div>
+    <div class="header-right">
+      <div class="contract-badge"><span>Contrato:</span><strong>14-3674716/26</strong></div>
+      <button class="btn-settings" id="btn-settings" title="Configurar conexão com o GitHub">⚙ GitHub</button>
+    </div>
+  </header>
+
+  <section class="progress-section">
+    <div class="progress-header">
+      <span id="progress-label">Progresso do financiamento</span>
+      <span><strong id="paid-count">0</strong> de <strong>48</strong> parcelas pagas</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </section>
+
+  <main class="featured-card" id="featured-card">
+    <div class="featured-top">
+      <div class="status-group">
+        <span class="parcela-tag" id="feat-plano">Parcela 001/048</span>
+        <span class="status-badge status-atual" id="feat-status">Mês Atual</span>
+      </div>
+      <div class="nav-controls">
+        <button class="btn-nav" id="btn-prev" title="Mês anterior">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>Anterior
+        </button>
+        <button class="btn-nav btn-today" id="btn-current-month" title="Ir para o vencimento do mês atual">Mês Atual</button>
+        <button class="btn-nav" id="btn-next" title="Próximo mês">Próximo
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <label>Beneficiário</label>
+        <div class="value">Banco Daycoval S.A.</div>
+        <div class="sub">Daycoval - Financeira Veículos</div>
+      </div>
+      <div class="info-item">
+        <label>Data de Vencimento</label>
+        <div class="value" id="feat-vencimento">24/04/2026</div>
+        <div class="sub" id="feat-mes-extenso">Abril de 2026</div>
+      </div>
+      <div class="info-item">
+        <label>Valor do Documento</label>
+        <div class="value highlight-price" id="feat-valor">R$ 2.323,20</div>
+        <div class="sub">Multa 2% + mora R$ 3,15/dia após venc.</div>
+      </div>
+    </div>
+
+    <div class="barcode-box">
+      <div class="barcode-header">
+        <span>Linha Digitável (Código para Pagamento)</span>
+        <span id="feat-digits-mode">47 dígitos</span>
+      </div>
+      <div class="barcode-line" id="feat-codigo"></div>
+      <div class="actions-row">
+        <button class="btn-copy" id="btn-copy-main">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span id="btn-copy-text">Copiar Código do Boleto</span>
+        </button>
+        <button class="btn-paid-toggle" id="btn-toggle-paid">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="btn-paid-text">Marcar como Pago</span>
+        </button>
+        <button class="btn-paid-toggle" id="btn-paid-until" title="Marca esta parcela e todas as anteriores como pagas">Pagas até aqui</button>
+      </div>
+    </div>
+  </main>
+
+  <section class="toolbar">
+    <div class="search-group">
+      <div class="input-wrapper">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Buscar por vencimento (ex: 24/12/2026, 05/2027 ou parcela)..." />
+      </div>
+      <select id="year-filter" aria-label="Filtrar por ano">
+        <option value="all">Todos os anos</option>
+        <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option>
+      </select>
+      <button class="btn-clear" id="btn-reset-filters">Limpar</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="list-header">
+      <h2>Todas as Parcelas</h2>
+      <span class="list-count" id="list-count">Exibindo 48 de 48 parcelas</span>
+    </div>
+    <div class="parcelas-grid" id="parcelas-grid"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<div class="modal" id="modal-settings">
+  <div class="modal-box">
+    <h3>Conexão com o GitHub</h3>
+    <div><label for="cfg-token">Token (fine-grained)</label><input type="password" id="cfg-token" autocomplete="off"></div>
+    <div><label for="cfg-owner">Usuário</label><input type="text" id="cfg-owner" style="padding-left:.8rem"></div>
+    <div><label for="cfg-repo">Repositório</label><input type="text" id="cfg-repo" style="padding-left:.8rem"></div>
+    <div><label for="cfg-branch">Branch</label><input type="text" id="cfg-branch" style="padding-left:.8rem"></div>
+    <div><label for="cfg-path">Caminho do arquivo .js</label><input type="text" id="cfg-path" style="padding-left:.8rem"></div>
+    <small>O token fica salvo apenas neste navegador (localStorage). Use um token restrito a este repositório, com permissão <b>Contents: Read and write</b> e validade curta.</small>
+    <div class="modal-actions">
+      <button class="btn-clear" id="cfg-cancel">Cancelar</button>
+      <button class="btn-nav btn-today" id="cfg-save">Salvar</button>
+    </div>
   </div>
+</div>
 
-  <!-- Toast de confirmação -->
-  <div class="toast" id="toast">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-    <span id="toast-msg">Código copiado para a área de transferência!</span>
-  </div>
+<script src="boletos_financiamento.js"></script>
+<script>
+const MESES_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
-  <!-- Importa o arquivo externo com os dados -->
-  <script src="boletos_financiamento.js"></script>
+// ===== Configuração do GitHub =====
+const CFG_KEY = "boletos_gh_cfg_v1";
+const DEFAULT_CFG = { owner: "ivanbsf", repo: "desktop", branch: "main", path: "boletos_carro/boletos_financiamento.js", token: "" };
+let cfg = { ...DEFAULT_CFG };
+try { cfg = { ...DEFAULT_CFG, ...JSON.parse(localStorage.getItem(CFG_KEY) || "{}") }; } catch (e) {}
 
-  <script>
-    // Configurações do seu repositório GitHub Pages
-    const GITHUB_CONFIG = {
-      owner: "ivanbsf",
-      repo: "desktop",
-      path: "boletos_carro/boletos_financiamento.js",
-      branch: "main"
-    };
+const isPago = b => b.pago === true;
+let salvando = false;
 
-    const MESES_PT = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
+function getInitialParcelIndex() {
+  const hoje = new Date();
+  const mesAtual = hoje.getMonth() + 1, anoAtual = hoje.getFullYear();
+  const exactIdx = boletosFinanciamento.findIndex(b => {
+    const [, mes, ano] = b.vencimento.split("/").map(Number);
+    return mes === mesAtual && ano === anoAtual;
+  });
+  if (exactIdx !== -1) return exactIdx;
+  const [d1, m1, a1] = boletosFinanciamento[0].vencimento.split("/").map(Number);
+  if (hoje < new Date(a1, m1 - 1, d1)) return 0;
+  return boletosFinanciamento.length - 1;
+}
+let currentIndex = getInitialParcelIndex();
 
-    const STORAGE_KEY = "daycoval_boletos_pagos_v1";
-    const TOKEN_KEY = "daycoval_github_pat_v1";
+function formatCurrency(val) { return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
 
-    // Carrega parcelas pagas diretamente do .js (pago: true) + cache local
-    function loadPaidParcels() {
-      const fromFile = boletosFinanciamento
-        .filter(b => b.pago === true)
-        .map(b => b.parcela);
+function getStatusInfo(boleto) {
+  if (isPago(boleto)) return { label: "Pago", className: "status-pago" };
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const [dia, mes, ano] = boleto.vencimento.split("/").map(Number);
+  const dataVenc = new Date(ano, mes - 1, dia);
+  if (mes === (hoje.getMonth() + 1) && ano === hoje.getFullYear()) return { label: "Vencimento deste Mês", className: "status-atual" };
+  if (dataVenc < hoje) return { label: "Vencido", className: "status-vencido" };
+  return { label: "A Vencer", className: "status-futuro" };
+}
 
-      // Se o .js já tem a propriedade 'pago' definida em algum item, prioriza o arquivo como fonte da verdade
-      const hasFileFlags = boletosFinanciamento.some(b => typeof b.pago === "boolean");
-      if (hasFileFlags) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(fromFile));
-        return new Set(fromFile);
-      }
+function showToast(msg, isError = false, ms = 2800) {
+  const toast = document.getElementById("toast");
+  document.getElementById("toast-msg").textContent = msg;
+  toast.classList.toggle("error", isError);
+  toast.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => toast.classList.remove("show"), ms);
+}
 
-      const fromLocal = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      return new Set(fromLocal);
-    }
+async function copyCode(codigo, buttonEl = null) {
+  try { await navigator.clipboard.writeText(codigo); }
+  catch (err) {
+    const ta = document.createElement("textarea");
+    ta.value = codigo; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta);
+  }
+  showToast("Código do boleto copiado! Cole no app do seu banco.");
+  if (buttonEl) {
+    const textSpan = document.getElementById("btn-copy-text");
+    buttonEl.classList.add("copied");
+    textSpan.textContent = "Código Copiado!";
+    setTimeout(() => { buttonEl.classList.remove("copied"); textSpan.textContent = "Copiar Código do Boleto"; }, 2200);
+  }
+}
 
-    let paidParcels = loadPaidParcels();
+// ===== Gravação no GitHub =====
+function toBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
 
-    // Busca versão mais recente do arquivo via API do GitHub (evita cache de CDN do GitHub Pages)
-    async function fetchLatestFromGitHub() {
-      const token = localStorage.getItem(TOKEN_KEY);
-      const headers = { "Accept": "application/vnd.github+json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
+function serializeJs() {
+  const linhas = boletosFinanciamento.map(b => {
+    let s = `  { parcela: ${b.parcela}, plano: "${b.plano}", vencimento: "${b.vencimento}", ` +
+            `codigo: "${b.codigo}", valor: ${b.valor.toFixed(2)}, pago: ${b.pago === true}`;
+    if (b.dataPagamento) s += `, dataPagamento: "${b.dataPagamento}"`;
+    return s + " },";
+  });
+  return `// Dados dos boletos do financiamento - Contrato 14-3674716/26 (Banco Daycoval)\n` +
+         `const boletosFinanciamento = [\n${linhas.join("\n")}\n];\n`;
+}
 
-      try {
-        const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?ref=${GITHUB_CONFIG.branch}&t=${Date.now()}`;
-        const res = await fetch(url, { headers });
-        if (!res.ok) return;
+async function saveToGitHub() {
+  if (!cfg.token) throw new Error("Configure o token do GitHub no botão ⚙ GitHub.");
+  const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`;
+  const headers = {
+    Authorization: `Bearer ${cfg.token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28"
+  };
+  const get = await fetch(`${url}?ref=${encodeURIComponent(cfg.branch)}`, { headers, cache: "no-store" });
+  if (!get.ok) throw new Error(`Não consegui ler o arquivo no GitHub (HTTP ${get.status}).`);
+  const { sha } = await get.json();
 
-        const data = await res.json();
-        const decoded = decodeURIComponent(escape(atob(data.content.replace(/
-/g, ""))));
-        const match = decoded.match(/const\s+boletosFinanciamento\s*=\s*(\[[\s\S]*?\]);/);
-        if (match) {
-          // Extrai array de forma segura
-          const parsed = (new Function(`return ${match[1]};`))();
-          if (Array.isArray(parsed) && parsed.length === boletosFinanciamento.length) {
-            parsed.forEach((item, i) => {
-              boletosFinanciamento[i].pago = Boolean(item.pago);
-            });
-            paidParcels = new Set(parsed.filter(b => b.pago).map(b => b.parcela));
-            localStorage.setItem(STORAGE_KEY, JSON.stringify([...paidParcels]));
-            renderAll();
-          }
-        }
-      } catch (err) {
-        // Silencioso se offline
-      }
-    }
+  const put = await fetch(url, {
+    method: "PUT",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: `Atualiza status dos boletos (${new Date().toLocaleString("pt-BR")})`,
+      content: toBase64(serializeJs()),
+      sha,
+      branch: cfg.branch
+    })
+  });
+  if (!put.ok) {
+    const e = await put.json().catch(() => ({}));
+    throw new Error(`Falha ao gravar (HTTP ${put.status}) ${e.message || ""}`);
+  }
+}
 
-    // Grava o arquivo boletos_financiamento.js atualizado direto no GitHub
-    async function saveToGitHub() {
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (!token) return false;
-
-      const dot = document.getElementById("sync-dot");
-      const label = document.getElementById("sync-status-label");
-      dot.className = "sync-dot syncing";
-      label.textContent = "Salvando...";
-
-      try {
-        const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
-        const headers = {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/vnd.github+json",
-          "Content-Type": "application/json"
-        };
-
-        // 1. Obtém o SHA atual do arquivo no GitHub
-        const getRes = await fetch(`${apiUrl}?ref=${GITHUB_CONFIG.branch}&t=${Date.now()}`, { headers });
-        if (!getRes.ok) {
-          throw new Error(`Erro ao ler arquivo no GitHub (${getRes.status})`);
-        }
-        const fileInfo = await getRes.json();
-
-        // 2. Monta o novo conteúdo do boletos_financiamento.js
-        let jsContent = "// Dados dos boletos do financiamento - Contrato 14-3674716/26 (Banco Daycoval)
-";
-        jsContent += "const boletosFinanciamento = [
-";
-        boletosFinanciamento.forEach(b => {
-          const isPago = paidParcels.has(b.parcela);
-          b.pago = isPago;
-          jsContent += `  { parcela: ${b.parcela}, plano: "${b.plano}", vencimento: "${b.vencimento}", codigo: "${b.codigo}", valor: ${b.valor.toFixed(2)}, pago: ${isPago} },
-`;
-        });
-        jsContent += "];
-";
-
-        // Codifica em Base64 suportando UTF-8
-        const base64Content = btoa(unescape(encodeURIComponent(jsContent)));
-
-        // 3. Faz o commit (PUT) direto no repositório
-        const putRes = await fetch(apiUrl, {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({
-            message: "Atualiza status de pagamento dos boletos",
-            content: base64Content,
-            sha: fileInfo.sha,
-            branch: GITHUB_CONFIG.branch
-          })
-        });
-
-        if (!putRes.ok) {
-          throw new Error(`Erro ao salvar no GitHub (${putRes.status})`);
-        }
-
-        dot.className = "sync-dot connected";
-        label.textContent = "Sincronizado";
-        return true;
-      } catch (err) {
-        console.error(err);
-        dot.className = "sync-dot";
-        label.textContent = "Erro no Sync";
-        showToast("Falha ao sincronizar com o GitHub. Verifique seu Token.", true);
-        return false;
-      }
-    }
-
-    function updateSyncBadge() {
-      const token = localStorage.getItem(TOKEN_KEY);
-      const dot = document.getElementById("sync-dot");
-      const label = document.getElementById("sync-status-label");
-      const removeBtn = document.getElementById("btn-remove-token");
-
-      if (token) {
-        dot.className = "sync-dot connected";
-        label.textContent = "GitHub Conectado";
-        removeBtn.style.display = "inline-block";
-      } else {
-        dot.className = "sync-dot";
-        label.textContent = "Configurar Sync";
-        removeBtn.style.display = "none";
-      }
-    }
-
-    // Detecta o índice do boleto correspondente ao mês/ano atual do sistema
-    function getInitialParcelIndex() {
-      const hoje = new Date();
-      const mesAtual = hoje.getMonth() + 1;
-      const anoAtual = hoje.getFullYear();
-
-      const exactIdx = boletosFinanciamento.findIndex(b => {
-        const [dia, mes, ano] = b.vencimento.split("/").map(Number);
-        return mes === mesAtual && ano === anoAtual;
-      });
-
-      if (exactIdx !== -1) return exactIdx;
-
-      const [d1, m1, a1] = boletosFinanciamento[0].vencimento.split("/").map(Number);
-      const primeiraData = new Date(a1, m1 - 1, d1);
-      if (hoje < primeiraData) return 0;
-
-      return boletosFinanciamento.length - 1;
-    }
-
-    let currentIndex = getInitialParcelIndex();
-
-    function formatCurrency(val) {
-      return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-    }
-
-    function getStatusInfo(boleto) {
-      if (paidParcels.has(boleto.parcela)) {
-        return { label: "Pago", className: "status-pago" };
-      }
-
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-
-      const [dia, mes, ano] = boleto.vencimento.split("/").map(Number);
-      const dataVenc = new Date(ano, mes - 1, dia);
-
-      if (mes === (hoje.getMonth() + 1) && ano === hoje.getFullYear()) {
-        return { label: "Vencimento deste Mês", className: "status-atual" };
-      }
-      if (dataVenc < hoje) {
-        return { label: "Vencido", className: "status-vencido" };
-      }
-      return { label: "A Vencer", className: "status-futuro" };
-    }
-
-    function showToast(msg, isError = false) {
-      const toast = document.getElementById("toast");
-      document.getElementById("toast-msg").textContent = msg;
-      toast.classList.toggle("error", isError);
-      toast.classList.add("show");
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => {
-        toast.classList.remove("show");
-      }, 3000);
-    }
-
-    async function copyCode(codigo, buttonEl = null) {
-      try {
-        await navigator.clipboard.writeText(codigo);
-      } catch (err) {
-        const ta = document.createElement("textarea");
-        ta.value = codigo;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-      }
-
-      showToast("Código do boleto copiado! Cole no app do seu banco.");
-
-      if (buttonEl) {
-        const textSpan = document.getElementById("btn-copy-text");
-        buttonEl.classList.add("copied");
-        textSpan.textContent = "Código Copiado!";
-        setTimeout(() => {
-          buttonEl.classList.remove("copied");
-          textSpan.textContent = "Copiar Código do Boleto";
-        }, 2200);
-      }
-    }
-
-    function updateProgress() {
-      const total = boletosFinanciamento.length;
-      const pagas = paidParcels.size;
-      const pct = Math.round((pagas / total) * 100);
-
-      document.getElementById("paid-count").textContent = pagas;
-      document.getElementById("progress-fill").style.width = `${pct}%`;
-    }
-
-    function renderFeatured() {
-      const boleto = boletosFinanciamento[currentIndex];
-      const [dia, mes, ano] = boleto.vencimento.split("/").map(Number);
-      const status = getStatusInfo(boleto);
-      const isPaid = paidParcels.has(boleto.parcela);
-
-      document.getElementById("feat-plano").textContent = `Parcela ${boleto.plano}`;
-      
-      const badge = document.getElementById("feat-status");
-      badge.textContent = status.label;
-      badge.className = `status-badge ${status.className}`;
-
-      document.getElementById("feat-vencimento").textContent = boleto.vencimento;
-      document.getElementById("feat-mes-extenso").textContent = `${MESES_PT[mes - 1]} de ${ano}`;
-      document.getElementById("feat-valor").textContent = formatCurrency(boleto.valor);
-      document.getElementById("feat-codigo").textContent = boleto.codigo;
-
-      document.getElementById("btn-prev").disabled = currentIndex === 0;
-      document.getElementById("btn-next").disabled = currentIndex === boletosFinanciamento.length - 1;
-
-      const paidBtn = document.getElementById("btn-toggle-paid");
-      const paidText = document.getElementById("btn-paid-text");
-      if (isPaid) {
-        paidBtn.classList.add("is-paid");
-        paidText.textContent = "Parcela Paga";
-      } else {
-        paidBtn.classList.remove("is-paid");
-        paidText.textContent = "Marcar como Pago";
-      }
-    }
-
-    function renderList() {
-      const query = document.getElementById("search-input").value.trim().toLowerCase();
-      const yearFilter = document.getElementById("year-filter").value;
-      const grid = document.getElementById("parcelas-grid");
-
-      const filtered = boletosFinanciamento
-        .map((item, idx) => ({ ...item, originalIndex: idx }))
-        .filter(item => {
-          const [, mes, ano] = item.vencimento.split("/");
-          const matchYear = yearFilter === "all" || ano === yearFilter;
-          const matchQuery =
-            !query ||
-            item.vencimento.includes(query) ||
-            item.plano.toLowerCase().includes(query) ||
-            `${mes}/${ano}`.includes(query) ||
-            MESES_PT[Number(mes) - 1].toLowerCase().includes(query);
-          return matchYear && matchQuery;
-        });
-
-      document.getElementById("list-count").textContent =
-        `Exibindo ${filtered.length} de ${boletosFinanciamento.length} parcelas`;
-
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="empty-state">Nenhum boleto encontrado para o filtro informado.</div>`;
-        return;
-      }
-
-      grid.innerHTML = filtered.map(item => {
-        const status = getStatusInfo(item);
-        const isSelected = item.originalIndex === currentIndex;
-        const isPaid = paidParcels.has(item.parcela);
-
-        return `
-          <div class="parcela-item ${isSelected ? "selected" : ""} ${isPaid ? "is-paid" : ""}" data-index="${item.originalIndex}">
-            <div class="item-top">
-              <span class="item-plano">${item.plano}</span>
-              <span class="status-badge ${status.className}">${status.label}</span>
-            </div>
-            <div class="item-date">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              Vencimento: <strong>${item.vencimento}</strong>
-            </div>
-            <div class="item-bottom">
-              <span class="item-valor">${formatCurrency(item.valor)}</span>
-              <button class="btn-mini-copy" data-copy="${item.codigo}">Copiar código</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      grid.querySelectorAll(".parcela-item").forEach(card => {
-        card.addEventListener("click", (e) => {
-          if (e.target.closest(".btn-mini-copy")) return;
-          currentIndex = Number(card.dataset.index);
-          renderAll();
-          document.getElementById("featured-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
-        });
-      });
-
-      grid.querySelectorAll(".btn-mini-copy").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          copyCode(btn.dataset.copy);
-        });
-      });
-    }
-
-    function renderAll() {
-      updateProgress();
-      renderFeatured();
-      renderList();
-    }
-
-    // Listeners principais
-    document.getElementById("btn-copy-main").addEventListener("click", function () {
-      const boleto = boletosFinanciamento[currentIndex];
-      copyCode(boleto.codigo, this);
+async function setPaid(indices, value) {
+  if (salvando) return;
+  salvando = true;
+  const backup = indices.map(i => ({ i, pago: boletosFinanciamento[i].pago, data: boletosFinanciamento[i].dataPagamento }));
+  const hoje = new Date().toLocaleDateString("pt-BR");
+  indices.forEach(i => {
+    const b = boletosFinanciamento[i];
+    b.pago = value;
+    if (value) b.dataPagamento = hoje; else delete b.dataPagamento;
+  });
+  renderAll();
+  showToast("Salvando no GitHub...", false, 15000);
+  try {
+    await saveToGitHub();
+    showToast("Salvo no GitHub! O site atualiza em ~1 min.");
+  } catch (err) {
+    backup.forEach(({ i, pago, data }) => {
+      boletosFinanciamento[i].pago = pago;
+      if (data) boletosFinanciamento[i].dataPagamento = data; else delete boletosFinanciamento[i].dataPagamento;
     });
-
-    document.getElementById("btn-prev").addEventListener("click", () => {
-      if (currentIndex > 0) {
-        currentIndex--;
-        renderAll();
-      }
-    });
-
-    document.getElementById("btn-next").addEventListener("click", () => {
-      if (currentIndex < boletosFinanciamento.length - 1) {
-        currentIndex++;
-        renderAll();
-      }
-    });
-
-    document.getElementById("btn-current-month").addEventListener("click", () => {
-      currentIndex = getInitialParcelIndex();
-      renderAll();
-      showToast("Exibindo o boleto do mês atual.");
-    });
-
-    document.getElementById("btn-toggle-paid").addEventListener("click", async () => {
-      const parcelaNum = boletosFinanciamento[currentIndex].parcela;
-      const wasPaid = paidParcels.has(parcelaNum);
-
-      if (wasPaid) {
-        paidParcels.delete(parcelaNum);
-      } else {
-        paidParcels.add(parcelaNum);
-      }
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...paidParcels]));
-      renderAll();
-
-      const hasToken = Boolean(localStorage.getItem(TOKEN_KEY));
-      if (hasToken) {
-        const ok = await saveToGitHub();
-        if (ok) {
-          showToast(wasPaid
-            ? `Parcela ${String(parcelaNum).padStart(3, "0")} desmarcada e salva no GitHub!`
-            : `Parcela ${String(parcelaNum).padStart(3, "0")} marcada como paga e salva no GitHub!`
-          );
-        }
-      } else {
-        showToast(wasPaid
-          ? `Parcela ${String(parcelaNum).padStart(3, "0")} desmarcada (salvo apenas neste navegador).`
-          : `Parcela ${String(parcelaNum).padStart(3, "0")} marcada como paga (configure o Sync GitHub para salvar na nuvem).`
-        );
-      }
-    });
-
-    // Modal de configuração do GitHub Token
-    const syncModal = document.getElementById("sync-modal");
-    document.getElementById("btn-open-sync").addEventListener("click", () => {
-      document.getElementById("github-token-input").value = localStorage.getItem(TOKEN_KEY) || "";
-      syncModal.classList.add("open");
-    });
-
-    document.getElementById("btn-close-modal").addEventListener("click", () => {
-      syncModal.classList.remove("open");
-    });
-
-    document.getElementById("btn-save-token").addEventListener("click", async () => {
-      const val = document.getElementById("github-token-input").value.trim();
-      if (!val) {
-        showToast("Cole um token válido do GitHub.", true);
-        return;
-      }
-      localStorage.setItem(TOKEN_KEY, val);
-      updateSyncBadge();
-      syncModal.classList.remove("open");
-      await saveToGitHub();
-      showToast("Token salvo e sincronizado com o GitHub!");
-    });
-
-    document.getElementById("btn-remove-token").addEventListener("click", () => {
-      localStorage.removeItem(TOKEN_KEY);
-      updateSyncBadge();
-      syncModal.classList.remove("open");
-      showToast("Token removido deste dispositivo.");
-    });
-
-    document.getElementById("search-input").addEventListener("input", renderList);
-    document.getElementById("year-filter").addEventListener("change", renderList);
-
-    document.getElementById("btn-reset-filters").addEventListener("click", () => {
-      document.getElementById("search-input").value = "";
-      document.getElementById("year-filter").value = "all";
-      renderList();
-    });
-
-    // Inicialização
-    updateSyncBadge();
     renderAll();
-    fetchLatestFromGitHub();
-  </script>
+    showToast(err.message, true, 6000);
+  } finally {
+    salvando = false;
+  }
+}
+
+// ===== Renderização =====
+function updateProgress() {
+  const total = boletosFinanciamento.length;
+  const pagas = boletosFinanciamento.filter(isPago).length;
+  document.getElementById("paid-count").textContent = pagas;
+  document.getElementById("progress-fill").style.width = `${Math.round((pagas / total) * 100)}%`;
+}
+
+function renderFeatured() {
+  const boleto = boletosFinanciamento[currentIndex];
+  const [, mes, ano] = boleto.vencimento.split("/").map(Number);
+  const status = getStatusInfo(boleto);
+  const pago = isPago(boleto);
+
+  document.getElementById("feat-plano").textContent = `Parcela ${boleto.plano}`;
+  const badge = document.getElementById("feat-status");
+  badge.textContent = status.label;
+  badge.className = `status-badge ${status.className}`;
+  document.getElementById("feat-vencimento").textContent = boleto.vencimento;
+  document.getElementById("feat-mes-extenso").textContent = `${MESES_PT[mes - 1]} de ${ano}`;
+  document.getElementById("feat-valor").textContent = formatCurrency(boleto.valor);
+  document.getElementById("feat-codigo").textContent = boleto.codigo;
+
+  document.getElementById("btn-prev").disabled = currentIndex === 0;
+  document.getElementById("btn-next").disabled = currentIndex === boletosFinanciamento.length - 1;
+
+  const paidBtn = document.getElementById("btn-toggle-paid");
+  paidBtn.classList.toggle("is-paid", pago);
+  paidBtn.disabled = salvando;
+  document.getElementById("btn-paid-until").disabled = salvando;
+  document.getElementById("btn-paid-text").textContent =
+    pago ? `Parcela Paga${boleto.dataPagamento ? " em " + boleto.dataPagamento : ""}` : "Marcar como Pago";
+}
+
+function renderList() {
+  const query = document.getElementById("search-input").value.trim().toLowerCase();
+  const yearFilter = document.getElementById("year-filter").value;
+  const grid = document.getElementById("parcelas-grid");
+
+  const filtered = boletosFinanciamento
+    .map((item, idx) => ({ ...item, originalIndex: idx }))
+    .filter(item => {
+      const [, mes, ano] = item.vencimento.split("/");
+      const matchYear = yearFilter === "all" || ano === yearFilter;
+      const matchQuery = !query || item.vencimento.includes(query) || item.plano.toLowerCase().includes(query) ||
+        `${mes}/${ano}`.includes(query) || MESES_PT[Number(mes) - 1].toLowerCase().includes(query);
+      return matchYear && matchQuery;
+    });
+
+  document.getElementById("list-count").textContent = `Exibindo ${filtered.length} de ${boletosFinanciamento.length} parcelas`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state">Nenhum boleto encontrado para o filtro informado.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item => {
+    const status = getStatusInfo(item);
+    const isSelected = item.originalIndex === currentIndex;
+    const pago = isPago(item);
+    return `
+      <div class="parcela-item ${isSelected ? "selected" : ""} ${pago ? "is-paid" : ""}" data-index="${item.originalIndex}">
+        <div class="item-top">
+          <span class="item-plano">${item.plano}</span>
+          <span class="status-badge ${status.className}">${status.label}</span>
+        </div>
+        <div class="item-date">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Vencimento: <strong>${item.vencimento}</strong>
+        </div>
+        <div class="item-bottom">
+          <span class="item-valor">${formatCurrency(item.valor)}</span>
+          <button class="btn-mini-copy" data-copy="${item.codigo}">Copiar código</button>
+        </div>
+      </div>`;
+  }).join("");
+
+  grid.querySelectorAll(".parcela-item").forEach(card => {
+    card.addEventListener("click", e => {
+      if (e.target.closest(".btn-mini-copy")) return;
+      currentIndex = Number(card.dataset.index);
+      renderAll();
+      document.getElementById("featured-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  });
+  grid.querySelectorAll(".btn-mini-copy").forEach(btn => {
+    btn.addEventListener("click", e => { e.stopPropagation(); copyCode(btn.dataset.copy); });
+  });
+}
+
+function renderAll() { updateProgress(); renderFeatured(); renderList(); }
+
+// ===== Eventos =====
+document.getElementById("btn-copy-main").addEventListener("click", function () {
+  copyCode(boletosFinanciamento[currentIndex].codigo, this);
+});
+document.getElementById("btn-prev").addEventListener("click", () => { if (currentIndex > 0) { currentIndex--; renderAll(); } });
+document.getElementById("btn-next").addEventListener("click", () => { if (currentIndex < boletosFinanciamento.length - 1) { currentIndex++; renderAll(); } });
+document.getElementById("btn-current-month").addEventListener("click", () => {
+  currentIndex = getInitialParcelIndex(); renderAll(); showToast("Exibindo o boleto do mês atual.");
+});
+
+document.getElementById("btn-toggle-paid").addEventListener("click", () => {
+  setPaid([currentIndex], !isPago(boletosFinanciamento[currentIndex]));
+});
+document.getElementById("btn-paid-until").addEventListener("click", () => {
+  const idxs = [];
+  for (let i = 0; i <= currentIndex; i++) if (!isPago(boletosFinanciamento[i])) idxs.push(i);
+  if (!idxs.length) return showToast("Todas até aqui já estão pagas.");
+  if (confirm(`Marcar ${idxs.length} parcela(s) como pagas (até ${boletosFinanciamento[currentIndex].plano})?`)) setPaid(idxs, true);
+});
+
+document.getElementById("search-input").addEventListener("input", renderList);
+document.getElementById("year-filter").addEventListener("change", renderList);
+document.getElementById("btn-reset-filters").addEventListener("click", () => {
+  document.getElementById("search-input").value = "";
+  document.getElementById("year-filter").value = "all";
+  renderList();
+});
+
+// Modal de configuração
+const modal = document.getElementById("modal-settings");
+const cfgFields = ["token", "owner", "repo", "branch", "path"];
+document.getElementById("btn-settings").addEventListener("click", () => {
+  cfgFields.forEach(f => document.getElementById("cfg-" + f).value = cfg[f] || "");
+  modal.classList.add("open");
+});
+document.getElementById("cfg-cancel").addEventListener("click", () => modal.classList.remove("open"));
+modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
+document.getElementById("cfg-save").addEventListener("click", () => {
+  cfgFields.forEach(f => cfg[f] = document.getElementById("cfg-" + f).value.trim());
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  modal.classList.remove("open");
+  showToast("Configuração salva neste navegador.");
+});
+
+renderAll();
+</script>
 </body>
 </html>
