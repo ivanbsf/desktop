@@ -11,8 +11,20 @@
       "icone": ""
     },
     {
-      "id": "7ea973505ce0",
-      "icone": "assets/site-icons/7ea973505ce0-4a17de2979b8.png",
+      "id": "b5d0f6755e2e",
+      "icone": "assets/site-icons/b5d0f6755e2e-83cd291c5af3.png",
+      "nome": "Advocacia Botelho",
+      "url": "https://advbotelho.zya.me/"
+    },
+    {
+      "id": "082b20f2c0d3",
+      "icone": "assets/site-icons/082b20f2c0d3-bd15c1ed48ea.png",
+      "nome": "PSF 3",
+      "url": "https://psfdompedro3.zya.me/"
+    },
+    {
+      "id": "2e99a54d21ac",
+      "icone": "assets/site-icons/2e99a54d21ac-b95b0dd6d2bc.png",
       "nome": "Ivan Tools",
       "url": "https://ivantools.zya.me/"
     }
