@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cofre de Tokens Local (PBE)</title>
+    <style>
+        body { font-family: monospace; background: #121212; color: #00ffcc; padding: 30px; }
+        .box { background: #1e1e1e; padding: 20px; border: 1px solid #333; margin-bottom: 15px; border-radius: 6px; }
+        input, button { background: #222; color: #fff; border: 1px solid #00ffcc; padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        button { background: #00ffcc; color: #121212; font-weight: bold; cursor: pointer; }
+        button:hover { background: #00cca3; }
+        pre { background: #0a0a0a; padding: 10px; overflow-x: auto; color: #ff007f; }
+    </style>
+</head>
+<body>
+
+    <h2>Gerenciador de Cofre Criptografado (Client-Side)</h2>
+
+    <div class="box">
+        <h3>1. Criptografar Token</h3>
+        <input type="password" id="masterPasswordEnc" placeholder="Senha Mestre">
+        <input type="text" id="rawToken" placeholder="Token do GitHub (ex: ghp_xxxxxxxx...)">
+        <button onclick="fazerCriptografia()">Criptografar e Salvar no LocalStorage</button>
+    </div>
+
+    <div class="box">
+        <h3>2. Descriptografar Token</h3>
+        <input type="password" id="masterPasswordDec" placeholder="Senha Mestre">
+        <button onclick="fazerDescriptografia()">Revelar Token</button>
+        <pre id="resultadoToken">Token revelado aparecerá aqui...</pre>
+    </div>
+
+<script>
+// Funções auxiliares para conversão de ArrayBuffer para Base64 e vice-versa
+function bufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+function base64ToBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+// Derivar Chave via PBKDF2
+async function derivarChave(senha, salt) {
+    const enc = new TextEncoder();
+    const keyMaterial = await window.crypto.subtle.importKey(
+        "raw",
+        enc.encode(senha),
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+    );
+    return window.crypto.subtle.deriveKey(
+        {
+            name: "PBKDF2",
+            salt: salt,
+            iterations: 600000, // Alto custo computacional para segurança
+            hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+    );
+}
+
+// Processo de Criptografia
+async function fazerCriptografia() {
+    const senha = document.getElementById("masterPasswordEnc").value;
+    const token = document.getElementById("rawToken").value;
+    if (!senha || !token) return alert("Preencha a senha e o token!");
+
+    const salt = window.crypto.getRandomValues(new Uint8Array(16));
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+    const chave = await derivarChave(senha, salt);
+
+    const enc = new TextEncoder();
+    const ciphertext = await window.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        chave,
+        enc.encode(token)
+    );
+
+    // Empacota tudo em um objeto JSON para salvar localmente
+    const payload = {
+        salt: bufferToBase64(salt),
+        iv: bufferToBase64(iv),
+        ciphertext: bufferToBase64(ciphertext)
+    };
+
+    localStorage.setItem("github_vault", JSON.stringify(payload));
+    alert("Token criptografado e salvo com segurança no navegador!");
+}
+
+// Processo de Descriptografia
+async function fazerDescriptografia() {
+    const senha = document.getElementById("masterPasswordDec").value;
+    const dadosSalvos = localStorage.getItem("github_vault");
+    
+    if (!dadosSalvos) return alert("Nenhum cofre encontrado no armazenamento local!");
+    if (!senha) return alert("Digite a senha mestre!");
+
+    try {
+        const payload = JSON.parse(dadosSalvos);
+        const salt = base64ToBuffer(payload.salt);
+        const iv = base64ToBuffer(payload.iv);
+        const ciphertext = base64ToBuffer(payload.ciphertext);
+
+        const chave = await derivarChave(senha, salt);
+
+        const decrypted = await window.crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: iv },
+            chave,
+            ciphertext
+        );
+
+        const dec = new TextDecoder();
+        document.getElementById("resultadoToken").innerText = dec.decode(decrypted);
+    } catch (e) {
+        document.getElementById("resultadoToken").innerText = "Erro: Senha incorreta ou dados corrompidos!";
+    }
+}
+</script>
+
+</body>
+</html>
