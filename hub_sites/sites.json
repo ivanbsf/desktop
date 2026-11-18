@@ -1,15 +1,9 @@
 {
-  "titulo": "Meus sites",
+  "titulo": "Sites",
   "descricao": "Atalhos para os meus sistemas e páginas.",
   "overlay": 50,
-  "fundo": "",
+  "fundo": "assets/fundo-3e5d92484cb2.jpg",
   "sites": [
-    {
-      "id": "exemplo",
-      "nome": "GitHub",
-      "url": "https://github.com/",
-      "icone": ""
-    },
     {
       "id": "b5d0f6755e2e",
       "icone": "assets/site-icons/b5d0f6755e2e-83cd291c5af3.png",
