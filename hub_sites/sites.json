@@ -4,6 +4,17 @@
   "overlay": 50,
   "fundo": "",
   "sites": [
-    { "id": "exemplo", "nome": "GitHub", "url": "https://github.com", "icone": "" }
+    {
+      "id": "exemplo",
+      "nome": "GitHub",
+      "url": "https://github.com/",
+      "icone": ""
+    },
+    {
+      "id": "7ea973505ce0",
+      "icone": "assets/site-icons/7ea973505ce0-4a17de2979b8.png",
+      "nome": "Ivan Tools",
+      "url": "https://ivantools.zya.me/"
+    }
   ]
 }
