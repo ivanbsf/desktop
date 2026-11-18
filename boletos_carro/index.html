@@ -210,15 +210,15 @@ input[type=text]:focus,select:focus{border-color:var(--accent)}
 <div class="modal" id="modal-settings">
   <div class="modal-box">
     <h3>Conexão com o GitHub</h3>
-    <div><label for="cfg-token">Token (fine-grained)</label><input type="password" id="cfg-token" autocomplete="off"></div>
+    <div><label for="cfg-token">Senha Mestre do Cofre</label><input type="password" id="cfg-token" autocomplete="off" placeholder="Digite sua senha mestre"></div>
     <div><label for="cfg-owner">Usuário</label><input type="text" id="cfg-owner" style="padding-left:.8rem"></div>
     <div><label for="cfg-repo">Repositório</label><input type="text" id="cfg-repo" style="padding-left:.8rem"></div>
     <div><label for="cfg-branch">Branch</label><input type="text" id="cfg-branch" style="padding-left:.8rem"></div>
     <div><label for="cfg-path">Caminho do arquivo .js</label><input type="text" id="cfg-path" style="padding-left:.8rem"></div>
-    <small>O token fica salvo apenas neste navegador (localStorage). Use um token restrito a este repositório, com permissão <b>Contents: Read and write</b> e validade curta.</small>
+    <small>Digite sua senha mestre para destravar o cofre embutido no código. O token real nunca é digitado aqui.</small>
     <div class="modal-actions">
       <button class="btn-clear" id="cfg-cancel">Cancelar</button>
-      <button class="btn-nav btn-today" id="cfg-save">Salvar</button>
+      <button class="btn-nav btn-today" id="cfg-save">Destravar e Salvar</button>
     </div>
   </div>
 </div>
@@ -227,9 +227,53 @@ input[type=text]:focus,select:focus{border-color:var(--accent)}
 <script>
 const MESES_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
+// ===== COFRE EMBUTIDO NO HTML (Substitua pelos dados gerados no Passo 1) =====
+const COFRE_EMBUTIDO = {
+    salt: "cJZoPFFEW6GmT5IU0jxpvQ==",
+    iv: "Gn3N9UOzeFLqy1ZC",
+    ciphertext: "MhPIKdJAfX4kQvHuWZ5i15FHVz16hHg2Ad17cpJO3YAUVC1z/A/aZSFhP3KzUkY2WpdOFCYWyB9kLzHBeEyiboCtp0Sj2bm0DdfqI2ACPGR2oCKdttONiSS9abtCb4tM7O8IuDONpEPr2ChC6g=="
+};
+
+// ===== Funções de Criptografia PBE (Web Crypto API) =====
+function base64ToBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+}
+
+async function derivarChave(senha, salt) {
+    const enc = new TextEncoder();
+    const keyMaterial = await window.crypto.subtle.importKey(
+        "raw", enc.encode(senha), { name: "PBKDF2" }, false, ["deriveKey"]
+    );
+    return window.crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: salt, iterations: 600000, hash: "SHA-256" },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"]
+    );
+}
+
+async function descriptografarToken(senha) {
+    try {
+        const salt = base64ToBuffer(COFRE_EMBUTIDO.salt);
+        const iv = base64ToBuffer(COFRE_EMBUTIDO.iv);
+        const ciphertext = base64ToBuffer(COFRE_EMBUTIDO.ciphertext);
+        const chave = await derivarChave(senha, salt);
+        const decrypted = await window.crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: iv }, chave, ciphertext
+        );
+        return new TextDecoder().decode(decrypted);
+    } catch (e) {
+        return null; // Senha mestre incorreta
+    }
+}
+
 // ===== Configuração do GitHub =====
-const CFG_KEY = "boletos_gh_cfg_v1";
-const DEFAULT_CFG = { owner: "ivanbsf", repo: "desktop", branch: "main", path: "boletos_carro/boletos_financiamento.js", token: "" };
+const CFG_KEY = "boletos_gh_cfg_v4";
+const DEFAULT_CFG = { owner: "ivanbsf", repo: "desktop", branch: "main", path: "boletos_carro/boletos_financiamento.js", cachedToken: null };
 let cfg = { ...DEFAULT_CFG };
 try { cfg = { ...DEFAULT_CFG, ...JSON.parse(localStorage.getItem(CFG_KEY) || "{}") }; } catch (e) {}
 
@@ -287,6 +331,25 @@ async function copyCode(codigo, buttonEl = null) {
   }
 }
 
+// ===== Obtenção Automática do Token Descriptografado =====
+async function getGithubToken() {
+  if (cfg.cachedToken) return cfg.cachedToken;
+
+  // Se não estiver em cache, pede a senha mestre apenas UMA vez para destravá-lo
+  let senhaMestre = prompt("Digite a sua senha mestre para destravar o cofre do GitHub:");
+  if (!senhaMestre) throw new Error("Operação cancelada: Senha mestre não informada.");
+
+  const tokenDecriptado = await descriptografarToken(senhaMestre);
+  if (!tokenDecriptado) {
+    throw new Error("Senha mestre incorreta! Não foi possível descriptografar o token embutido.");
+  }
+
+  cfg.cachedToken = tokenDecriptado;
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  showToast("Cofre destravado com sucesso!");
+  return tokenDecriptado;
+}
+
 // ===== Gravação no GitHub =====
 function toBase64(str) {
   const bytes = new TextEncoder().encode(str);
@@ -307,15 +370,18 @@ function serializeJs() {
 }
 
 async function saveToGitHub() {
-  if (!cfg.token) throw new Error("Configure o token do GitHub no botão ⚙ GitHub.");
+  const token = await getGithubToken();
   const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`;
   const headers = {
-    Authorization: `Bearer ${cfg.token}`,
+    Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28"
   };
   const get = await fetch(`${url}?ref=${encodeURIComponent(cfg.branch)}`, { headers, cache: "no-store" });
-  if (!get.ok) throw new Error(`Não consegui ler o arquivo no GitHub (HTTP ${get.status}).`);
+  if (!get.ok) {
+    if (get.status === 401) { cfg.cachedToken = null; localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
+    throw new Error(`Não consegui ler o arquivo no GitHub (HTTP ${get.status}).`);
+  }
   const { sha } = await get.json();
 
   const put = await fetch(url, {
@@ -483,18 +549,34 @@ document.getElementById("btn-reset-filters").addEventListener("click", () => {
 
 // Modal de configuração
 const modal = document.getElementById("modal-settings");
-const cfgFields = ["token", "owner", "repo", "branch", "path"];
 document.getElementById("btn-settings").addEventListener("click", () => {
-  cfgFields.forEach(f => document.getElementById("cfg-" + f).value = cfg[f] || "");
+  document.getElementById("cfg-token").value = ""; 
+  document.getElementById("cfg-owner").value = cfg.owner || "";
+  document.getElementById("cfg-repo").value = cfg.repo || "";
+  document.getElementById("cfg-branch").value = cfg.branch || "";
+  document.getElementById("cfg-path").value = cfg.path || "";
   modal.classList.add("open");
 });
 document.getElementById("cfg-cancel").addEventListener("click", () => modal.classList.remove("open"));
 modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
-document.getElementById("cfg-save").addEventListener("click", () => {
-  cfgFields.forEach(f => cfg[f] = document.getElementById("cfg-" + f).value.trim());
+
+document.getElementById("cfg-save").addEventListener("click", async () => {
+  const senhaMestre = document.getElementById("cfg-token").value.trim();
+  cfg.owner = document.getElementById("cfg-owner").value.trim();
+  cfg.repo = document.getElementById("cfg-repo").value.trim();
+  cfg.branch = document.getElementById("cfg-branch").value.trim();
+  cfg.path = document.getElementById("cfg-path").value.trim();
+
+  if (senhaMestre) {
+    const tokenDecifrado = await descriptografarToken(senhaMestre);
+    if (!tokenDecifrado) return alert("Senha mestre incorreta! Não foi possível descriptografar o cofre embutido.");
+    
+    cfg.cachedToken = tokenDecifrado; // Salva o token real descriptografado no navegador
+    showToast("Cofre destravado com sucesso!");
+  }
+
   localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
   modal.classList.remove("open");
-  showToast("Configuração salva neste navegador.");
 });
 
 renderAll();
