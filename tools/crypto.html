@@ -2,132 +2,87 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Cofre de Tokens Local (PBE)</title>
+    <title>Gerador de Cofre Criptografado</title>
     <style>
-        body { font-family: monospace; background: #121212; color: #00ffcc; padding: 30px; }
-        .box { background: #1e1e1e; padding: 20px; border: 1px solid #333; margin-bottom: 15px; border-radius: 6px; }
-        input, button { background: #222; color: #fff; border: 1px solid #00ffcc; padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-        button { background: #00ffcc; color: #121212; font-weight: bold; cursor: pointer; }
-        button:hover { background: #00cca3; }
-        pre { background: #0a0a0a; padding: 10px; overflow-x: auto; color: #ff007f; }
+        body { font-family: monospace; background: #0f1115; color: #f1f5f9; padding: 30px; max-width: 600px; margin: 0 auto; }
+        .box { background: #161920; padding: 20px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; margin-bottom: 20px; }
+        input, button { width: 100%; background: #1c2029; color: #fff; border: 1px solid rgba(255,255,255,.15); padding: 10px; margin: 8px 0; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        button { background: #38bdf8; color: #0f1115; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { background: #0284c7; color: #fff; }
+        pre { background: #0d0f13; padding: 15px; border-radius: 8px; color: #38bdf8; overflow-x: auto; border: 1px dashed rgba(56,189,248,.3); }
     </style>
 </head>
 <body>
 
-    <h2>Gerenciador de Cofre Criptografado (Client-Side)</h2>
-
+    <h2>Gerador de Cofre (AES-GCM + PBKDF2)</h2>
     <div class="box">
-        <h3>1. Criptografar Token</h3>
-        <input type="password" id="masterPasswordEnc" placeholder="Senha Mestre">
-        <input type="text" id="rawToken" placeholder="Token do GitHub (ex: ghp_xxxxxxxx...)">
-        <button onclick="fazerCriptografia()">Criptografar e Salvar no LocalStorage</button>
+        <label>Token Real do GitHub (ex: ghp_...)</label>
+        <input type="password" id="inputToken" placeholder="Cole seu token real aqui">
+        
+        <label>Senha Mestre (ex: senhaforte)</label>
+        <input type="password" id="inputSenha" placeholder="Digite sua senha mestre">
+        
+        <button onclick="gerarCofre()">Gerar Objeto do Cofre</button>
     </div>
 
     <div class="box">
-        <h3>2. Descriptografar Token</h3>
-        <input type="password" id="masterPasswordDec" placeholder="Senha Mestre">
-        <button onclick="fazerDescriptografia()">Revelar Token</button>
-        <pre id="resultadoToken">Token revelado aparecerá aqui...</pre>
+        <h3>Resultado para colocar no HTML:</h3>
+        <pre id="resultado">Preencha os campos acima e clique em gerar...</pre>
     </div>
 
 <script>
-// Funções auxiliares para conversão de ArrayBuffer para Base64 e vice-versa
 function bufferToBase64(buffer) {
     const bytes = new Uint8Array(buffer);
     let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
     return btoa(binary);
 }
 
-function base64ToBuffer(base64) {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
+async function gerarCofre() {
+    const token = document.getElementById("inputToken").value.trim();
+    const senha = document.getElementById("inputSenha").value.trim();
+
+    if (!token || !senha) {
+        return alert("Preencha o token e a senha mestre!");
     }
-    return bytes.buffer;
-}
-
-// Derivar Chave via PBKDF2
-async function derivarChave(senha, salt) {
-    const enc = new TextEncoder();
-    const keyMaterial = await window.crypto.subtle.importKey(
-        "raw",
-        enc.encode(senha),
-        { name: "PBKDF2" },
-        false,
-        ["deriveKey"]
-    );
-    return window.crypto.subtle.deriveKey(
-        {
-            name: "PBKDF2",
-            salt: salt,
-            iterations: 600000, // Alto custo computacional para segurança
-            hash: "SHA-256"
-        },
-        keyMaterial,
-        { name: "AES-GCM", length: 256 },
-        false,
-        ["encrypt", "decrypt"]
-    );
-}
-
-// Processo de Criptografia
-async function fazerCriptografia() {
-    const senha = document.getElementById("masterPasswordEnc").value;
-    const token = document.getElementById("rawToken").value;
-    if (!senha || !token) return alert("Preencha a senha e o token!");
-
-    const salt = window.crypto.getRandomValues(new Uint8Array(16));
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    const chave = await derivarChave(senha, salt);
-
-    const enc = new TextEncoder();
-    const ciphertext = await window.crypto.subtle.encrypt(
-        { name: "AES-GCM", iv: iv },
-        chave,
-        enc.encode(token)
-    );
-
-    // Empacota tudo em um objeto JSON para salvar localmente
-    const payload = {
-        salt: bufferToBase64(salt),
-        iv: bufferToBase64(iv),
-        ciphertext: bufferToBase64(ciphertext)
-    };
-
-    localStorage.setItem("github_vault", JSON.stringify(payload));
-    alert("Token criptografado e salvo com segurança no navegador!");
-}
-
-// Processo de Descriptografia
-async function fazerDescriptografia() {
-    const senha = document.getElementById("masterPasswordDec").value;
-    const dadosSalvos = localStorage.getItem("github_vault");
-    
-    if (!dadosSalvos) return alert("Nenhum cofre encontrado no armazenamento local!");
-    if (!senha) return alert("Digite a senha mestre!");
 
     try {
-        const payload = JSON.parse(dadosSalvos);
-        const salt = base64ToBuffer(payload.salt);
-        const iv = base64ToBuffer(payload.iv);
-        const ciphertext = base64ToBuffer(payload.ciphertext);
+        const enc = new TextEncoder();
+        const salt = window.crypto.getRandomValues(new Uint8Array(16));
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
-        const chave = await derivarChave(senha, salt);
-
-        const decrypted = await window.crypto.subtle.decrypt(
-            { name: "AES-GCM", iv: iv },
-            chave,
-            ciphertext
+        const keyMaterial = await window.crypto.subtle.importKey(
+            "raw", enc.encode(senha), { name: "PBKDF2" }, false, ["deriveKey"]
         );
 
-        const dec = new TextDecoder();
-        document.getElementById("resultadoToken").innerText = dec.decode(decrypted);
+        const chave = await window.crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt: salt, iterations: 600000, hash: "SHA-256" },
+            keyMaterial,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["encrypt"]
+        );
+
+        const ciphertext = await window.crypto.subtle.encrypt(
+            { name: "AES-GCM", iv: iv }, chave, enc.encode(token)
+        );
+
+        const cofreObj = {
+            salt: bufferToBase64(salt),
+            iv: bufferToBase64(iv),
+            ciphertext: bufferToBase64(ciphertext)
+        };
+
+        // Formata o texto para você copiar e colar direto no código do seu gerenciador de boletos
+        const codigoFormatado = `const COFRE_EMBUTIDO = {\n` +
+                                `    salt: "${cofreObj.salt}",\n` +
+                                `    iv: "${cofreObj.iv}",\n` +
+                                `    ciphertext: "${cofreObj.ciphertext}"\n` +
+                                `};`;
+
+        document.getElementById("resultado").innerText = codigoFormatado;
     } catch (e) {
-        document.getElementById("resultadoToken").innerText = "Erro: Senha incorreta ou dados corrompidos!";
+        alert("Erro ao gerar criptografia: " + e.message);
     }
 }
 </script>
