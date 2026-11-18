@@ -1,1 +1,56 @@
-1
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- CSP: só permite recursos do próprio site e a API do GitHub -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'self'">
+<meta name="theme-color" content="#000000">
+<title>Meus sites</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="fundo" aria-hidden="true"></div>
+<header class="topo">
+  <div><h1 id="titulo"></h1><p id="descricao"></p></div>
+  <div class="barra" id="barra"></div>
+</header>
+<main>
+  <ul class="grade" id="grade"></ul>
+  <p id="vazio" hidden>Nenhum site ainda. Entre no modo edição para adicionar o primeiro.</p>
+</main>
+<div id="aviso" role="status" aria-live="polite"></div>
+
+<dialog id="dSite" aria-labelledby="tSite"><form id="fSite" novalidate>
+  <h2 id="tSite">Novo site</h2>
+  <label for="sNome">Nome</label><input id="sNome" name="nome" maxlength="40" required>
+  <label for="sUrl">Endereço</label><input id="sUrl" name="url" type="url" placeholder="https://exemplo.com" required>
+  <label for="sIcone">Ícone PNG (opcional)</label><input id="sIcone" name="icone" type="file" accept="image/png">
+  <div class="prev"><img id="pIcone" alt="Prévia do ícone" hidden></div>
+  <p class="erro" role="alert"></p>
+  <div class="acoes"><button type="button" data-fechar>Cancelar</button><button class="primario">Salvar</button></div>
+</form></dialog>
+
+<dialog id="dApar" aria-labelledby="tApar"><form id="fApar" novalidate>
+  <h2 id="tApar">Aparência</h2>
+  <label for="aTit">Título</label><input id="aTit" name="titulo" maxlength="60">
+  <label for="aDes">Descrição</label><input id="aDes" name="descricao" maxlength="160">
+  <label for="aFun">Imagem de fundo</label><input id="aFun" name="fundo" type="file" accept="image/png,image/jpeg,image/webp">
+  <label for="aOv">Camada escura: <output id="oOv"></output></label><input id="aOv" name="ov" type="range" min="0" max="90">
+  <label class="linha"><input type="checkbox" name="semfundo"> Remover imagem de fundo</label>
+  <div class="prev" id="pFundo"></div>
+  <p class="erro" role="alert"></p>
+  <div class="acoes"><button type="button" data-fechar>Cancelar</button><button class="primario">Aplicar</button></div>
+</form></dialog>
+
+<dialog id="dSenha" aria-labelledby="tSenha"><form id="fSenha">
+  <h2 id="tSenha">Modo edição</h2>
+  <label for="pSenha">Senha mestre</label><input id="pSenha" name="senha" type="password" autocomplete="current-password">
+  <p class="erro" role="alert"></p>
+  <div class="acoes"><button type="button" data-fechar>Cancelar</button><button type="button" id="semToken">Editar sem publicar</button><button class="primario">Desbloquear</button></div>
+</form></dialog>
+
+<script src="cofre.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

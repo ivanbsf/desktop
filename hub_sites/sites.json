@@ -1,0 +1,9 @@
+{
+  "titulo": "Meus sites",
+  "descricao": "Atalhos para os meus sistemas e páginas.",
+  "overlay": 50,
+  "fundo": "",
+  "sites": [
+    { "id": "exemplo", "nome": "GitHub", "url": "https://github.com", "icone": "" }
+  ]
+}
