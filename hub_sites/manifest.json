@@ -1,6 +1,6 @@
 {
-  "name": "Desktop App",
-  "short_name": "Desktop",
+  "name": "Sites Hub",
+  "short_name": "SitesHub",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
